@@ -10,14 +10,18 @@ import Spinner from "../common/Spinner";
 import { toast } from "react-toastify";
 
 class CoursesPage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.debounceTimer = null;
+  }
   state = {
     redirectToAddCoursePage: false,
+    inputValue: "",
   };
-
   componentDidMount() {
     const { courses, authors, actions } = this.props;
     if (courses.length === 0) {
-      actions.loadCourses().catch((error) => {
+      actions.loadCourses(this.state.inputValue).catch((error) => {
         alert("Loading courses failed" + error);
       });
     }
@@ -38,6 +42,15 @@ class CoursesPage extends React.Component {
     }
   };
 
+  handleSearch = (event) => {
+    const query = event.target.value;
+    this.setState({ inputValue: query });
+    clearTimeout(this.debounceTimer); // Clear the previous timer
+    this.debounceTimer = setTimeout(() => {
+      this.props.actions.loadCourses(this.state.inputValue); // Call actions.loadCourses after the user stops typing
+    }, 500);
+  };
+
   render() {
     return (
       <>
@@ -47,15 +60,29 @@ class CoursesPage extends React.Component {
           <Spinner />
         ) : (
           <>
-            <button
-              style={{ marginBottom: 20 }}
-              className="btn btn-primary add-course"
-              onClick={() => {
-                this.setState({ redirectToAddCoursePage: true });
-              }}
-            >
-              Add Course
-            </button>
+            <div className="row">
+              <div className="col-md-6">
+                <input
+                  placeholder="Search..."
+                  value={this.state.inputValue}
+                  onChange={this.handleSearch}
+                />
+              </div>
+              <div className="col-md-6">
+                <button
+                  style={{
+                    marginBottom: 20,
+                    float: "right",
+                  }}
+                  className="btn btn-primary add-course"
+                  onClick={() => {
+                    this.setState({ redirectToAddCoursePage: true });
+                  }}
+                >
+                  Add Course
+                </button>
+              </div>
+            </div>
             <CourseList
               onDeleteClick={this.handleDeleteCourse}
               courses={this.props.courses}

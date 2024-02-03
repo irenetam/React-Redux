@@ -20,6 +20,7 @@ export function CourseManagePage({
   const [course, setCourse] = useState({ ...props.course });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   useEffect(() => {
     if (courses.length === 0) {
@@ -38,6 +39,7 @@ export function CourseManagePage({
   }, [props.course]);
 
   function handleChange(event) {
+    setFormIsDirty(true);
     const { name, value } = event.target;
     setCourse((prevCourse) => ({
       ...prevCourse,
@@ -72,6 +74,27 @@ export function CourseManagePage({
         setErrors({ onSave: error.message });
       });
   }
+
+  useEffect(() => {
+    if (!props.course) {
+      history.push("/404"); // Redirect to 404 page
+    }
+  }, [props.course, history]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (formIsDirty) {
+        event.preventDefault();
+        event.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formIsDirty]);
 
   return authors.length === 0 || courses.length === 0 ? (
     <Spinner />

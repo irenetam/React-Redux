@@ -21,9 +21,10 @@ export function deleteCourseOptimistic(course) {
   return { type: types.DELETE_COURSE_OPTIMISTIC, course: course };
 }
 
-export function loadCourses() {
+export function loadCourses(query) {
   return function (dispatch) {
     dispatch(beginApiCall());
+    console.log(query);
     return courseApi
       .getCourses()
       .then((courses) => {
